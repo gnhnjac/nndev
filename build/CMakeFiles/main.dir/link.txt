@@ -1,0 +1,1 @@
+/usr/bin/cc CMakeFiles/main.dir/src/activations.c.o CMakeFiles/main.dir/src/costs.c.o CMakeFiles/main.dir/src/layer.c.o CMakeFiles/main.dir/src/main.c.o CMakeFiles/main.dir/src/matrix.c.o CMakeFiles/main.dir/src/network.c.o -o main  -lm 
