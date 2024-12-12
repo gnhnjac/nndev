@@ -1,3 +1,0 @@
-/home/amik/programming/nndev/build/CMakeFiles/main.dir
-/home/amik/programming/nndev/build/CMakeFiles/edit_cache.dir
-/home/amik/programming/nndev/build/CMakeFiles/rebuild_cache.dir

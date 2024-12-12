@@ -22,3 +22,7 @@ network *net_create(size_t hidden_count, size_t *layer_sizes,
 			  float (*hid_act)(float), float (*out_act)(float), float (*init_func)());
 
 matrix *net_feedforward(network *net);
+
+void net_backpropagate(network *net, const matrix *cost_derivative, float lr);
+
+void net_print(const network *net);

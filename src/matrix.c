@@ -27,6 +27,26 @@ matrix *mat_create(size_t rows, size_t cols)
 
 }
 
+matrix *mat_copy(const matrix *mat)
+{
+
+	matrix *cpy = mat_create(mat->rows,mat->cols);
+
+	for (int i = 0; i < mat->rows*mat->cols; i++)
+		cpy->data[i] = mat->data[i];
+
+	return cpy;
+
+}
+
+void mat_load(matrix *mat, float data[])
+{
+
+	for (int i = 0; i < mat->rows*mat->cols; i++)
+		mat->data[i] = data[i];
+
+}
+
 // adds two matrices together, all dimensions have to be equal
 void mat_add(matrix *dst, const matrix *mat1, const matrix *mat2)
 {
@@ -152,6 +172,33 @@ matrix *mat_dmul(const matrix *mat1, const matrix *mat2)
 
 }
 
+// multiplies 2 matrices elementwise and puts it in the 3rd matrix
+void mat_had(matrix *dst, const matrix *mat1, const matrix *mat2)
+{
+
+	assert(mat_deq(*mat1,*mat2));
+
+	for (int i = 0; i < mat1->rows*mat1->cols; i++)
+	{
+
+		dst->data[i] = mat1->data[i] * mat2->data[i];
+
+	}
+
+}
+
+// directly multiplies 2 matrices together and returns the resulting hadamard product
+matrix *mat_dhad(const matrix *mat1, const matrix *mat2)
+{
+
+	matrix *mat = mat_create(mat1->rows,mat2->cols);
+
+	mat_had(mat,mat1,mat2);
+
+	return mat;
+
+}
+
 // sets a matrix's elements to the specified value
 void mat_set(matrix *mat, float val)
 {
@@ -174,6 +221,9 @@ void mat_set_func(matrix *mat, float (*func)())
 void mat_apply_func(matrix *mat, float (*func)(float))
 {
 
+	if (!func)
+		return;
+
 	for (int i = 0; i < mat->rows*mat->cols; i++)
 		mat->data[i] = func(mat->data[i]);
 
@@ -182,6 +232,9 @@ void mat_apply_func(matrix *mat, float (*func)(float))
 // prints a matrix
 void mat_print(const matrix *mat)
 {
+
+	if (!mat)
+		return;
 
 	printf("%ldx%ld:\n",mat->rows,mat->cols);
 
