@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 #include "network.h"
 #include "costs.h"
 #include "activations.h"
-
 
 // initializes a network with the specified layers, activation and initialization function.
 void net_init(network *net, size_t hidden_count, size_t *layer_sizes, 
@@ -114,73 +114,100 @@ matrix *net_feedforward(network *net)
 void net_backpropagate(network *net, const matrix *cost_derivative , float lr)
 {
 
-	// derivative of activation relative to output
-	mat_apply_func(net->output.nodes, d_act(net->output.activation));
+	matrix *layer_cost = mat_copy(cost_derivative);
 
-	matrix *layer_cost = mat_dhad(net->output.nodes, cost_derivative);
+	matrix *new_layer_cost = layer_backpropagate(&net->output,
+		(net->hidden_count > 0) ? &net->hidden[net->hidden_count-1] : &net->input,
+		layer_cost,
+		lr);
 
-	matrix *scaled_cost = mat_copy(layer_cost);
+	mat_free(layer_cost);
 
-	// scale the layer cost down by the learning rate
-	mat_smul(scaled_cost,lr);
-
-	matrix *activations = (net->hidden_count > 0) ? net->hidden[net->hidden_count-1].nodes : net->input.nodes;
-
-	matrix *activations_t = mat_dtrans(activations);
-
-	matrix *weights_t = mat_dtrans(net->output.weights);
-
-	matrix *weights_gradient = mat_dmul(scaled_cost, activations_t);
-
-	// subtract the gradient from the current layer's weights
-	mat_dsub(net->output.weights, weights_gradient);
-
-	// subtract the layer cost from the current layer's biases
-	mat_dsub(net->output.biases,scaled_cost);
-
-	mat_free(scaled_cost);
-	//mat_free(cost_derivative);
-	mat_free(activations_t);
-	mat_free(weights_gradient);
+	layer_cost = new_layer_cost;
 
 	for(int i = net->hidden_count - 1; i >= 0; i--)
 	{
 
-		mat_apply_func(net->hidden[i].nodes,d_act(net->hidden[i].activation));
+		new_layer_cost = layer_backpropagate(&net->hidden[i],
+			(i > 0) ? &net->hidden[i-1] : &net->input,
+			layer_cost,
+			lr);
 
-		activations = (i > 0) ? net->hidden[i-1].nodes : net->input.nodes;
-		activations_t = mat_dtrans(activations);
-
-		matrix *new_layer_cost_rhs = mat_dmul(weights_t, layer_cost);
-		matrix *new_layer_cost = mat_dhad(net->hidden[i].nodes, new_layer_cost_rhs);
-
-		scaled_cost = mat_copy(new_layer_cost);
-
-		// // scale the layer cost down by the learning rate
-		mat_smul(scaled_cost,lr);
-
-		mat_free(weights_t);
-		mat_free(new_layer_cost_rhs);
-
-		weights_t = mat_dtrans(net->hidden[i].weights);
-
-		weights_gradient = mat_dmul(scaled_cost, activations_t);
-
-		mat_dsub(net->hidden[i].weights, weights_gradient);
-
-		mat_dsub(net->hidden[i].biases, scaled_cost);
-
-		mat_free(scaled_cost);
 		mat_free(layer_cost);
-		mat_free(weights_gradient);
-		mat_free(activations_t);
 
 		layer_cost = new_layer_cost;
 
 	}
 
-	mat_free(weights_t);
 	mat_free(layer_cost);
+
+}
+
+// trains the network on a single sample
+// returns the training cost of the sample
+float net_train_stochastic(network *net, const sample *smpl,
+	float (*cost)(const matrix *, const matrix *, int), float lr)
+{
+
+	matrix *cost_derivative = mat_create(net->output.nodes->rows, 1);
+
+	assert(smpl_valid(*net,*smpl));
+
+	mat_dcopy(net->input.nodes,smpl->input);
+
+	matrix *prediction = net_feedforward(net);
+
+	float training_cost = cost(smpl->output,prediction,1);
+
+	d_cost(cost)(cost_derivative,smpl->output,prediction,1);
+
+	mat_free(prediction);
+
+	net_backpropagate(net, cost_derivative, lr);
+
+	mat_free(cost_derivative);
+
+	return training_cost;
+
+}
+
+// trains the network given a set of samples
+// returns the training cost of the network
+float net_train_batch(network *net, const sample *samples[], size_t sample_sz, 
+	float (*cost)(const matrix *, const matrix *, int), float lr)
+{
+
+	float training_cost = 0;
+
+	matrix *average_cost_derivative = mat_create(net->output.nodes->rows, 1);
+
+	matrix *sample_cost_derivative = mat_copy(average_cost_derivative);
+
+	for (int i = 0; i < sample_sz; i++)
+	{
+
+		assert(smpl_valid(*net,*samples[i]));
+
+		mat_dcopy(net->input.nodes,samples[i]->input);
+
+		matrix *prediction = net_feedforward(net);
+
+		training_cost += cost(samples[i]->output,prediction,sample_sz);
+
+		d_cost(cost)(sample_cost_derivative,samples[i]->output,prediction,sample_sz);
+
+		mat_dadd(average_cost_derivative,sample_cost_derivative);
+
+		mat_free(prediction);
+
+	}
+
+	net_backpropagate(net, average_cost_derivative, lr);
+
+	mat_free(average_cost_derivative);
+	mat_free(sample_cost_derivative);
+
+	return training_cost;
 
 }
 

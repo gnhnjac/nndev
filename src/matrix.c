@@ -14,6 +14,17 @@ void mat_init(matrix *mat, size_t rows, size_t cols)
 
 }
 
+matrix *mat_vector_from_arr(float arr[], size_t sz)
+{
+
+	matrix *vector = mat_create(sz,1);
+
+	for (int i = 0; i < sz; i++)
+		vector->data[i] = arr[i];
+
+	return vector;
+
+}
 
 // creates and initializes a matrix with the requested dimensions
 matrix *mat_create(size_t rows, size_t cols)
@@ -27,6 +38,7 @@ matrix *mat_create(size_t rows, size_t cols)
 
 }
 
+// returns a copy of a matrix
 matrix *mat_copy(const matrix *mat)
 {
 
@@ -37,6 +49,17 @@ matrix *mat_copy(const matrix *mat)
 
 	return cpy;
 
+}
+
+// copies src to dst
+void mat_dcopy(matrix *dst, const matrix *src)
+{
+
+	assert(mat_deq(*src,*dst));
+
+	for (int i = 0; i < src->rows*src->cols; i++)
+		dst->data[i] = src->data[i];
+	
 }
 
 void mat_load(matrix *mat, float data[])
@@ -111,8 +134,8 @@ void mat_trans(matrix *dst, const matrix *mat)
 
 }
 
-// directly transpose a matrix and return the transposed matrix
-matrix *mat_dtrans(const matrix *mat)
+// transpose a matrix and return the transposed malloced matrix
+matrix *mat_mtrans(const matrix *mat)
 {
 
 	matrix *dst = mat_create(mat->cols,mat->rows);
@@ -158,8 +181,8 @@ void mat_mul(matrix *dst, const matrix *mat1, const matrix *mat2)
 
 }
 
-// directly multiplies 2 matrices together and returns the resulting matrix
-matrix *mat_dmul(const matrix *mat1, const matrix *mat2)
+// multiplies 2 matrices together and returns the resulting malloced matrix
+matrix *mat_mmul(const matrix *mat1, const matrix *mat2)
 {
 
 	assert(mat_meq(*mat1, *mat2));
@@ -187,8 +210,9 @@ void mat_had(matrix *dst, const matrix *mat1, const matrix *mat2)
 
 }
 
-// directly multiplies 2 matrices together and returns the resulting hadamard product
-matrix *mat_dhad(const matrix *mat1, const matrix *mat2)
+// multiplies 2 matrices together
+// returns the resulting hadamard product as an allocated matrix
+matrix *mat_mhad(const matrix *mat1, const matrix *mat2)
 {
 
 	matrix *mat = mat_create(mat1->rows,mat2->cols);
@@ -197,6 +221,12 @@ matrix *mat_dhad(const matrix *mat1, const matrix *mat2)
 
 	return mat;
 
+}
+
+// directly multiplies 2 matrices together hadamardwise and puts the result in the 1st
+void mat_dhad(matrix *mat1, const matrix *mat2)
+{
+	mat_had(mat1,mat1,mat2);
 }
 
 // sets a matrix's elements to the specified value

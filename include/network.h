@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 #include "layer.h"
+#include "sample.h"
 
 typedef struct _network
 {
@@ -24,5 +25,12 @@ network *net_create(size_t hidden_count, size_t *layer_sizes,
 matrix *net_feedforward(network *net);
 
 void net_backpropagate(network *net, const matrix *cost_derivative, float lr);
+
+float net_train_stochastic(network *net, const sample *smpl,
+	float (*cost)(const matrix *, const matrix *, int), float lr);
+
+float net_train_batch(network *net, const sample *samples[], size_t sample_sz, 
+	float (*cost)(const matrix *, const matrix *, int), float lr);
+
 
 void net_print(const network *net);

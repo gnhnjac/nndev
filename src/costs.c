@@ -9,9 +9,9 @@ float mse(const matrix *expected, const matrix *predicted, int samples)
 
 	mat_sub(error,expected,predicted);
 
-	matrix *error_transposed = mat_dtrans(error);
+	matrix *error_transposed = mat_mtrans(error);
 
-	matrix *mse_value_mat = mat_dmul(error_transposed,error);
+	matrix *mse_value_mat = mat_mmul(error_transposed,error);
 
 	float mse_value = mse_value_mat->data[0] / samples;
 

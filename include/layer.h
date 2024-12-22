@@ -20,4 +20,5 @@ typedef struct _layer
 } layer, *p_layer;
 
 layer *layer_propagate(layer *cur, const layer *prev);
+matrix *layer_backpropagate(layer *cur, const layer *prev, matrix *layer_cost, float lr);
 void layer_print(const layer *lay);
