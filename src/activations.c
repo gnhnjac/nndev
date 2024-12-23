@@ -8,8 +8,30 @@ float sigmoidf(float f)
 
 float reluf(float f)
 {
-    return fmax(0,f);
+    return (f > 0) ? f : 0;
 }
+
+// void softmaxf(matrix *vect)
+// {
+
+//     float max = vect->data[0];
+
+//     for(int i = 0; i < vect->rows; i++)
+//     {
+//         if (vect->data[i] > max)
+//             max = vect->data[i];
+//     }
+
+//     float sum = 0;
+
+//     for (int i = 0; i < vect->rows; i++) {
+//         vect->data[i] = exp(vect->data[i] - max);
+//         sum += vect->data[i];
+//     }
+
+//     mat_smul(vect,1/sum);
+
+// }
 
 // returns a function pointer to the derivative of the activation function
 float (*d_act(float (*act)(float)))(float)
@@ -32,6 +54,6 @@ float d_sigmoidf(float f)
 float d_reluf(float f)
 {
 
-    return (f >= 0) ? 1 : 0;
+    return (f > 0) ? 1 : 0;
 
 }

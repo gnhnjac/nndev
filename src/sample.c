@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "sample.h"
 
+// initializes a sample given 2 arrays
 void smpl_init(sample *s, float input[], size_t input_sz, float output[], size_t output_sz)
 {
 
@@ -10,12 +11,27 @@ void smpl_init(sample *s, float input[], size_t input_sz, float output[], size_t
 
 }
 
+// creates a sample given 2 arrays
 sample *smpl_create(float input[], size_t input_sz, float output[], size_t output_sz)
 {
 
 	sample *s = (sample *)malloc(sizeof(sample));
 
 	smpl_init(s,input,input_sz,output,output_sz);
+
+	return s;
+
+}
+
+// creates a sample given 2 matrices
+sample *smpl_create_mat(matrix *input, matrix *output)
+{
+
+	sample *s = (sample *)malloc(sizeof(sample));
+
+	s->input = mat_copy(input);
+
+	s->output = mat_copy(output);
 
 	return s;
 

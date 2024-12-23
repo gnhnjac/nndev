@@ -39,14 +39,8 @@ void (*d_cost(float (*cost)(const matrix *, const matrix *, int)))(matrix *, con
 void d_mse(matrix *dst, const matrix *expected, const matrix *predicted, int samples)
 {
 
-	//matrix *error = mat_create(expected->rows,1);
-
-	// mat_sub(dst,expected,predicted);
-
 	mat_sub(dst,predicted,expected);
 
 	mat_smul(dst,2/samples);
-
-	//return error;
 
 }

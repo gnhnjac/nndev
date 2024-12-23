@@ -15,3 +15,4 @@ typedef struct _sample
 
 void smpl_init(sample *s, float input[], size_t input_sz, float output[], size_t output_sz);
 sample *smpl_create(float input[], size_t input_sz, float output[], size_t output_sz);
+sample *smpl_create_mat(matrix *input, matrix *output);

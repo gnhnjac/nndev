@@ -5,6 +5,11 @@
 #include "activations.h"
 #include "costs.h"
 #include "sample.h"
+#include "idx.h"
+
+#define BATCH_SIZE 100
+
+#define TRAINING_ITERS 100000
 
 // returns a float number from -1 to 1
 float random_float()
@@ -15,60 +20,130 @@ float random_float()
 int main()
 {
 
-	srand(time(NULL)); 
+	srand(time(NULL));
 
-	size_t layer_arch[] = {2,2,1};
+	idx_buffer *training_images = idx_read("../MNIST_ORG/train-images.idx3-ubyte");
+
+	idx_buffer *training_labels = idx_read("../MNIST_ORG/train-labels.idx1-ubyte");
+
+	idx_buffer *testing_images = idx_read("../MNIST_ORG/t10k-images.idx3-ubyte");
+
+	idx_buffer *testing_labels = idx_read("../MNIST_ORG/t10k-labels.idx1-ubyte");
+
+	sample *samples[training_images->n_samples];
+
+	sample *testing_samples[testing_images->n_samples];
+
+	for (int i = 0; i < training_images->n_samples; i++)
+	{
+
+		float input[28*28] = {0};
+
+		float output[10] = {0};
+
+		for (int j = 0; j < 28*28;j++)
+		{
+
+			// normalize values from 0-255 to 0-1
+			input[j] = training_images->samples[i]->data[j]/255.0;
+
+		}
+
+		// activate only the corresponding digit
+		output[(int)training_labels->samples[i]->data[0]] = 1;
+
+		samples[i] = smpl_create(input,28*28, output, 10);
+
+	}
+
+	for (int i = 0; i < testing_images->n_samples; i++)
+	{
+
+		float input[28*28] = {0};
+
+		float output[10] = {0};
+
+		for (int j = 0; j < 28*28;j++)
+		{
+
+			// normalize values from 0-255 to 0-1
+			input[j] = testing_images->samples[i]->data[j]/255.0;
+
+		}
+
+		// activate only the corresponding digit
+		output[(int)testing_labels->samples[i]->data[0]] = 1;
+
+		testing_samples[i] = smpl_create(input,28*28, output, 10);
+
+	}
+
+	size_t layer_arch[] = {28*28,64,10};
 
 	network *net = net_create(1, layer_arch, 
 			  sigmoidf, sigmoidf, random_float);
 
-	float azero[] = {0};
-	float aone[] = {1};
-	float azerozero[] = {0, 0};
-	float aoneone[] = {1, 1};
-	float azeroone[] = {0, 1};
-	float aonezero[] = {1, 0};
+	sample *sample_batch[BATCH_SIZE];
 
-	sample *zero = smpl_create(azerozero,2,azero,1);
-	sample *one = smpl_create(aoneone,2,azero,1);
-	sample *zeroone = smpl_create(azeroone,2,aone,1);
-	sample *onezero = smpl_create(aonezero,2,aone,1);
+	float training_cost_avg = 0;
 
-	sample *samples[4] = {zero,one,zeroone,onezero};
-
-	for (int i = 0; i < 10000; i++)
+	for (int i = 0; i < TRAINING_ITERS; i++)
 	{
 
-		int choice = rand()%4;
+		int choice = rand()%training_images->n_samples;
 
-		printf("training cost: %f\n", net_train_stochastic(net, samples[choice], mse, 1));
+		// for (int j = 0; j < BATCH_SIZE; j++)
+		// {
+
+		// 	int choice = rand()%training_images->n_samples;
+
+		// 	sample_batch[j] = samples[choice];
+
+		// }
+
+		training_cost_avg += net_train_stochastic(net, samples[choice], mse, 0.1);
+
+		if (i % (TRAINING_ITERS / 100) == 0)
+		{
+			printf("training cost %f\n",training_cost_avg/(TRAINING_ITERS/100));
+			training_cost_avg = 0;
+		}
 
 	}
 
-	net->input.nodes->data[0] = 1;
-	net->input.nodes->data[1] = 1;
+	printf("training done, testing...");
 
-	mat_print(net_feedforward(net));
+	int correct = 0;
 
-	net->input.nodes->data[0] = 0;
-	net->input.nodes->data[1] = 0;
+	for (int i = 0; i < testing_images->n_samples; i++)
+	{
 
-	mat_print(net_feedforward(net));
+		int correct_label = testing_labels->samples[i]->data[0];
 
-	net->input.nodes->data[0] = 0;
-	net->input.nodes->data[1] = 1;
+		mat_dcopy(net->input.nodes,testing_samples[i]->input);
 
-	mat_print(net_feedforward(net));
+		matrix *predicted = net_feedforward(net);
 
-	net->input.nodes->data[0] = 1;
-	net->input.nodes->data[1] = 0;
+		int max_label = 0;
+		float max_value = 0;
 
-	mat_print(net_feedforward(net));
+		for (int j = 0; j < 10; j++)
+		{
 
-	net->input.nodes->data[0] = 0.5;
-	net->input.nodes->data[1] = 0.5;
+			if (predicted->data[j] > max_value)
+			{
+				max_value = predicted->data[j];
+				max_label = j;
+			}
 
-	mat_print(net_feedforward(net));
+		}
+
+		if (max_label == correct_label)
+			correct++;
+
+	}
+
+	printf("network testing success: %f%%",correct*100.0/(testing_labels->n_samples));
 
 	//net_print(net);
 
