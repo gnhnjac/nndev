@@ -7,7 +7,7 @@
 #include "sample.h"
 #include "idx.h"
 
-#define BATCH_SIZE 100
+#define BATCH_SIZE 10
 
 #define TRAINING_ITERS 100000
 
@@ -78,10 +78,10 @@ int main()
 
 	}
 
-	size_t layer_arch[] = {28*28,64,10};
+	size_t layer_arch[] = {28*28,128,10};
 
 	network *net = net_create(1, layer_arch, 
-			  sigmoidf, sigmoidf, random_float);
+			  sigmoidf, softmaxf, random_float);
 
 	sample *sample_batch[BATCH_SIZE];
 
@@ -101,7 +101,9 @@ int main()
 
 		// }
 
-		training_cost_avg += net_train_stochastic(net, samples[choice], mse, 0.1);
+		training_cost_avg += net_train_stochastic(net, samples[choice], bce, 0.1);
+
+		// training_cost_avg += net_train_batch(net, sample_batch, BATCH_SIZE, mse, 0.1);
 
 		if (i % (TRAINING_ITERS / 100) == 0)
 		{

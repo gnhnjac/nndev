@@ -9,7 +9,9 @@ layer *layer_propagate(layer *cur, const layer *prev)
 	mat_mul(cur->nodes, cur->weights, prev->nodes);
 	mat_dadd(cur->nodes,cur->biases);
 
-	if (cur->activation)
+	if (cur->activation == softmaxf)
+		softmaxf(cur->nodes);
+	else
 		mat_apply_func(cur->nodes, cur->activation);
 
 	return cur;
@@ -17,12 +19,15 @@ layer *layer_propagate(layer *cur, const layer *prev)
 }
 
 // backward propagates the error and adjusts the weights and biases accordingly.
-// returns the new layer cost
+// returns the prev layer's cost
 matrix *layer_backpropagate(layer *cur, const layer *prev, matrix *layer_cost, float lr)
 {
 
 	// derivative of activation relative to current layer
-	mat_apply_func(cur->nodes, d_act(cur->activation));
+	if (cur->activation == softmaxf)
+		d_softmax(cur->nodes);
+	else
+		mat_apply_func(cur->nodes, d_act(cur->activation));
 
 	mat_dhad(layer_cost, cur->nodes);
 

@@ -146,7 +146,7 @@ void net_backpropagate(network *net, const matrix *cost_derivative , float lr)
 // trains the network on a single sample
 // returns the training cost of the sample
 float net_train_stochastic(network *net, const sample *smpl,
-	float (*cost)(const matrix *, const matrix *, int), float lr)
+	float (*cost)(const matrix *, const matrix *), float lr)
 {
 
 	matrix *cost_derivative = mat_create(net->output.nodes->rows, 1);
@@ -157,9 +157,9 @@ float net_train_stochastic(network *net, const sample *smpl,
 
 	matrix *prediction = net_feedforward(net);
 
-	float training_cost = cost(smpl->output,prediction,1);
+	float training_cost = cost(smpl->output,prediction);
 
-	d_cost(cost)(cost_derivative,smpl->output,prediction,1);
+	d_cost(cost)(cost_derivative,smpl->output,prediction);
 
 	mat_free(prediction);
 
@@ -174,7 +174,7 @@ float net_train_stochastic(network *net, const sample *smpl,
 // trains the network given a set of samples
 // returns the training cost of the network
 float net_train_batch(network *net, const sample *samples[], size_t sample_sz, 
-	float (*cost)(const matrix *, const matrix *, int), float lr)
+	float (*cost)(const matrix *, const matrix *), float lr)
 {
 
 	float training_cost = 0;
@@ -192,9 +192,9 @@ float net_train_batch(network *net, const sample *samples[], size_t sample_sz,
 
 		matrix *prediction = net_feedforward(net);
 
-		training_cost += cost(samples[i]->output,prediction,sample_sz);
+		training_cost += cost(samples[i]->output,prediction);
 
-		d_cost(cost)(sample_cost_derivative,samples[i]->output,prediction,sample_sz);
+		d_cost(cost)(sample_cost_derivative,samples[i]->output,prediction);
 
 		mat_dadd(average_cost_derivative,sample_cost_derivative);
 
@@ -202,12 +202,14 @@ float net_train_batch(network *net, const sample *samples[], size_t sample_sz,
 
 	}
 
+	mat_smul(average_cost_derivative,1.0/sample_sz);
+
 	net_backpropagate(net, average_cost_derivative, lr);
 
 	mat_free(average_cost_derivative);
 	mat_free(sample_cost_derivative);
 
-	return training_cost;
+	return training_cost / sample_sz;
 
 }
 

@@ -34,6 +34,8 @@ matrix *mat_create(size_t rows, size_t cols);
 matrix *mat_copy(const matrix *mat);
 void mat_dcopy(matrix *dst, const matrix *src);
 void mat_load(matrix *mat, float data[]);
+matrix *mat_ident(size_t dim, float val);
+matrix *mat_identitize(matrix *vect);
 void mat_add(matrix *dst, const matrix *mat1, const matrix *mat2);
 void mat_sub(matrix *dst, const matrix *mat1, const matrix *mat2);
 void mat_dadd(matrix *mat1, const matrix *mat2);

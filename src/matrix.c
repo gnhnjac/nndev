@@ -70,6 +70,34 @@ void mat_load(matrix *mat, float data[])
 
 }
 
+// returns an identity matrix of dimension: dim x dim and value: val
+matrix *mat_ident(size_t dim, float val)
+{
+
+	matrix *ident = mat_create(dim,dim);
+
+	for (int i = 0; i < dim; i++)
+		ident->data[i*dim + i] = val;
+
+	return ident;
+
+}
+
+// returns an identitized version of a vector
+matrix *mat_identitize(matrix *vect)
+{
+
+	assert(vect->cols == 1); // make sure it's a vector
+
+	matrix *ident = mat_create(vect->rows,vect->rows);
+
+	for(int i = 0; i < vect->rows; i++)
+		ident->data[i*vect->rows + i] = vect->data[i];
+
+	return ident;
+
+}
+
 // adds two matrices together, all dimensions have to be equal
 void mat_add(matrix *dst, const matrix *mat1, const matrix *mat2)
 {

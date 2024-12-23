@@ -24,13 +24,17 @@ network *net_create(size_t hidden_count, size_t *layer_sizes,
 
 matrix *net_feedforward(network *net);
 
+void net_sub_grad_avg(network *net, size_t samples);
+
+void net_calc_grads(network *net, const matrix *cost_derivative, float lr);
+
 void net_backpropagate(network *net, const matrix *cost_derivative, float lr);
 
 float net_train_stochastic(network *net, const sample *smpl,
-	float (*cost)(const matrix *, const matrix *, int), float lr);
+	float (*cost)(const matrix *, const matrix *), float lr);
 
 float net_train_batch(network *net, const sample *samples[], size_t sample_sz, 
-	float (*cost)(const matrix *, const matrix *, int), float lr);
+	float (*cost)(const matrix *, const matrix *), float lr);
 
 
 void net_print(const network *net);
