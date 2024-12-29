@@ -36,3 +36,17 @@ sample *smpl_create_mat(matrix *input, matrix *output)
 	return s;
 
 }
+
+// frees the sample's internal structure and the sample itself
+void smpl_free(sample *smpl)
+{
+
+	if (!smpl)
+		return;
+
+	mat_free(smpl->input);
+	mat_free(smpl->output);
+
+	free(smpl);
+
+}

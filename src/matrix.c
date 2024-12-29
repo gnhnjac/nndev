@@ -314,10 +314,12 @@ void mat_print(const matrix *mat)
 
 }
 
-// free a matrix that was allocated dynamically
+// free a matrix that was allocated dynamically including the matrix itself
 void mat_free(matrix *mat)
 {
 
+	if (!mat)
+		return;
 
 	free(mat->data);
 	free(mat);

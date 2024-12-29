@@ -36,5 +36,6 @@ float net_train_stochastic(network *net, const sample *smpl,
 float net_train_batch(network *net, const sample *samples[], size_t sample_sz, 
 	float (*cost)(const matrix *, const matrix *), float lr);
 
+void net_free(network *net);
 
 void net_print(const network *net);

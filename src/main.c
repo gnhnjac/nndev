@@ -9,7 +9,7 @@
 
 #define BATCH_SIZE 10
 
-#define TRAINING_ITERS 100000
+#define TRAINING_ITERS 100//100000
 
 // returns a float number from -1 to 1
 float random_float()
@@ -101,7 +101,7 @@ int main()
 
 		// }
 
-		training_cost_avg += net_train_stochastic(net, samples[choice], bce, 0.1);
+		training_cost_avg += net_train_stochastic(net, samples[choice], bce, 0.001);
 
 		// training_cost_avg += net_train_batch(net, sample_batch, BATCH_SIZE, mse, 0.1);
 
@@ -140,6 +140,8 @@ int main()
 
 		}
 
+		mat_free(predicted);
+
 		if (max_label == correct_label)
 			correct++;
 
@@ -147,9 +149,18 @@ int main()
 
 	printf("network testing success: %f%%",correct*100.0/(testing_labels->n_samples));
 
-	//net_print(net);
+	for (int i = 0; i < training_images->n_samples; i++)
+		smpl_free(samples[i]);
 
+	for (int i = 0; i < testing_images->n_samples; i++)
+		smpl_free(testing_samples[i]);
 
+	idx_free(training_images);
+	idx_free(training_labels);
+	idx_free(testing_images);
+	idx_free(testing_labels);
+
+	net_free(net);
 
 	return 0;
 

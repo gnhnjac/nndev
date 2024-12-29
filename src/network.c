@@ -95,7 +95,7 @@ network *net_create(size_t hidden_count, size_t *layer_sizes,
 
 }
 
-// forward propagates the network and returns the resulting output vector
+// forward propagates the network and returns a copy of the resulting output vector
 matrix *net_feedforward(network *net)
 {
 
@@ -210,6 +210,25 @@ float net_train_batch(network *net, const sample *samples[], size_t sample_sz,
 	mat_free(sample_cost_derivative);
 
 	return training_cost / sample_sz;
+
+}
+
+// frees the network internal structure including the network itself
+void net_free(network *net)
+{
+
+	if (!net)
+		return;
+
+	layer_internal_free(&net->input);
+	layer_internal_free(&net->output);
+
+	for (int i = 0; i < net->hidden_count; i++)
+		layer_internal_free(&net->hidden[i]);
+
+	free(net->hidden);
+
+	free(net);
 
 }
 

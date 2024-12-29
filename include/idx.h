@@ -11,3 +11,4 @@ typedef struct _idx_buffer
 } idx_buffer, *p_idx_buffer;
 
 idx_buffer *idx_read(char *path);
+void idx_free(idx_buffer *idx_buf);

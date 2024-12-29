@@ -58,6 +58,21 @@ matrix *layer_backpropagate(layer *cur, const layer *prev, matrix *layer_cost, f
 
 }
 
+// frees the layer's internal structure but not the layer itself
+void layer_internal_free(layer *lay)
+{
+
+	if (!lay)
+		return;
+
+	mat_free(lay->nodes);
+
+	mat_free(lay->weights);
+
+	mat_free(lay->biases);
+
+}
+
 void layer_print(const layer *lay)
 {
 

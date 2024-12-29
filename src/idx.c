@@ -130,3 +130,16 @@ idx_buffer *idx_read(char *path)
 	return idx_buf;
 
 }
+
+// frees the idx internal structure and the idx buffer itself
+void idx_free(idx_buffer *idx_buf)
+{
+
+	for (int i = 0; i < idx_buf->n_samples; i++)
+		mat_free(idx_buf->samples[i]);
+
+	free(idx_buf->samples);
+
+	free(idx_buf);
+
+}

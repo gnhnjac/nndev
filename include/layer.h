@@ -21,4 +21,5 @@ typedef struct _layer
 
 layer *layer_propagate(layer *cur, const layer *prev);
 matrix *layer_backpropagate(layer *cur, const layer *prev, matrix *layer_cost, float lr);
+void layer_internal_free(layer *lay);
 void layer_print(const layer *lay);

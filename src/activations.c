@@ -11,6 +11,13 @@ float reluf(float f)
     return (f > 0) ? f : 0;
 }
 
+float leaky_reluf(float f)
+{
+
+    return (f > 0) ? f : 0.01 * f;
+
+}
+
 void softmaxf(matrix *vect)
 {
 
@@ -41,6 +48,8 @@ float (*d_act(float (*act)(float)))(float)
         return &d_sigmoidf;
     else if(act == reluf)
         return &d_reluf;
+    else if(act == leaky_reluf)
+        return &d_leaky_reluf;
     return 0;
 
 }
@@ -55,6 +64,13 @@ float d_reluf(float f)
 {
 
     return (f > 0) ? 1 : 0;
+
+}
+
+float d_leaky_reluf(float f)
+{
+
+    return (f > 0) ? 1 : 0.01;
 
 }
 
@@ -74,5 +90,7 @@ void d_softmax(matrix *vect)
 
     for(int i = 0; i < vect->rows; i++)
         vect->data[i] = vect_ident->data[i*vect->rows+i];
+
+    mat_free(vect_ident);
 
 }
